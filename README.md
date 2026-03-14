@@ -159,6 +159,3 @@ vercel
 
 ---
 
-## 📄 License
-
-MIT — use it, fork it, ship it.
