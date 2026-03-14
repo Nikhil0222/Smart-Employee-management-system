@@ -256,6 +256,33 @@ app.put(
     }
   }
 );
+// 🗑️ DELETE EMPLOYEE (ADMIN only)
+app.delete(
+  "/api/employees/:id",
+  verifyToken,
+  authorizeRoles("ADMIN"),
+  async (req, res) => {
+    try {
+      const employeeId = parseInt(req.params.id);
+
+      const employee = await prisma.user.findUnique({
+        where: { id: employeeId },
+      });
+
+      if (!employee || employee.role !== "EMPLOYEE") {
+        return res.status(404).json({ message: "Employee not found" });
+      }
+
+      await prisma.user.delete({
+        where: { id: employeeId },
+      });
+
+      res.json({ message: "Employee deleted successfully" });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEMS — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #F5F2EC;
+      --surface: #FDFBF7;
+      --border: rgba(0,0,0,0.08);
+      --border-strong: rgba(0,0,0,0.15);
+      --text: #1A1814;
+      --muted: rgba(26,24,20,0.45);
+      --accent: #C8522A;
+      --accent-light: rgba(200,82,42,0.08);
+      --green: #2A7A4B;
+      --font-serif: 'Instrument Serif', serif;
+      --font-sans: 'Geist', sans-serif;
+      --font-mono: 'Geist Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* Left panel */
+    .left {
+      background: var(--text);
+      color: var(--bg);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .left::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: 
+        radial-gradient(ellipse at 20% 80%, rgba(200,82,42,0.18) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 20%, rgba(200,82,42,0.08) 0%, transparent 50%);
+    }
+
+    .left-content { position: relative; z-index: 1; }
+
+    .logo {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      color: rgba(245,242,236,0.5);
+      margin-bottom: 4rem;
+    }
+
+    .left h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(42px, 5vw, 64px);
+      font-weight: 400;
+      line-height: 1.1;
+      letter-spacing: -1px;
+      margin-bottom: 1.5rem;
+    }
+
+    .left h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .left p {
+      font-size: 15px;
+      color: rgba(245,242,236,0.55);
+      line-height: 1.7;
+      max-width: 340px;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .stat { }
+    .stat-num {
+      font-family: var(--font-serif);
+      font-size: 32px;
+      color: var(--bg);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: rgba(245,242,236,0.4);
+      margin-top: 4px;
+      font-family: var(--font-mono);
+    }
+
+    /* Decorative grid */
+    .grid-deco {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(245,242,236,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,242,236,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      z-index: 0;
+    }
+
+    /* Right panel */
+    .right {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .form-wrap {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .form-header {
+      margin-bottom: 2.5rem;
+    }
+
+    .form-header h2 {
+      font-family: var(--font-serif);
+      font-size: 36px;
+      font-weight: 400;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .form-header p {
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      gap: 0;
+      background: rgba(0,0,0,0.05);
+      border-radius: 10px;
+      padding: 3px;
+      margin-bottom: 2rem;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px;
+      border: none;
+      background: transparent;
+      border-radius: 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: var(--surface);
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    }
+
+    /* Form */
+    .field {
+      margin-bottom: 1rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-family: var(--font-mono);
+      letter-spacing: 0.04em;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border-strong);
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-light);
+    }
+
+    .field input::placeholder { color: rgba(26,24,20,0.3); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 12px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      border-radius: 10px;
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.01em;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+    .btn-primary:active { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 1.25rem 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-strong);
+    }
+
+    /* Alert */
+    .alert {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .alert.error { background: rgba(200,82,42,0.08); color: var(--accent); border: 1px solid rgba(200,82,42,0.2); }
+    .alert.success { background: rgba(42,122,75,0.08); color: var(--green); border: 1px solid rgba(42,122,75,0.2); }
+    .alert.show { display: block; }
+
+    /* Role badge */
+    .role-info {
+      display: flex;
+      gap: 8px;
+      margin-top: 1rem;
+    }
+    .role-pill {
+      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border-strong);
+      color: var(--muted);
+      font-family: var(--font-mono);
+    }
+
+    @media (max-width: 768px) {
+      body { grid-template-columns: 1fr; }
+      .left { display: none; }
+    }
+
+    /* Animations */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .form-wrap { animation: fadeUp 0.5s ease; }
+
+    /* Form visibility */
+    #registerForm { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Left decorative panel -->
+  <div class="left">
+    <div class="grid-deco"></div>
+    <div class="left-content">
+      <div class="logo">SEMS / v1.0</div>
+      <div>
+        <h1>Smart <em>Employee</em> Management</h1>
+        <p>A modern system to manage your workforce — track employees, roles, and access with precision.</p>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Employees</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">2</div>
+        <div class="stat-label">Role tiers</div>
+      </div>
+      <div class="stat">
+        <div class="stat-num">JWT</div>
+        <div class="stat-label">Auth method</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="right">
+    <div class="form-wrap">
+      <div class="form-header">
+        <h2>Welcome back</h2>
+        <p>Sign in to your account to continue</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('login')">Sign In</button>
+        <button class="tab" onclick="switchTab('register')">Register</button>
+      </div>
+
+      <!-- Alert -->
+      <div class="alert" id="alert"></div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="field">
+          <label>EMAIL ADDRESS</label>
+          <input type="email" id="loginEmail" placeholder="you@company.com" required />
+        </div>
+        <div class="field">
+          <label>PASSWORD</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn-primary" id="loginBtn">Sign In →</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="registerForm" onsubmit="handleRegister(event)">
+        <div class="field">
+          <label>FULL NAME</label>
+          <input type="text" id="regName" placeholder="John Doe" required />
+        </div>
+        <div class="field">
+          <label>EMAIL ADDRESS</label>
+          <input type="email" id="regEmail" placeholder="you@company.com" required />
+        </div>
+        <div class="field">
+          <label>PASSWORD</label>
+          <input type="password" id="regPassword" placeholder="Min. 8 characters" required />
+        </div>
+        <div class="field">
+          <label>ROLE</label>
+          <select id="regRole">
+            <option value="EMPLOYEE">Employee</option>
+            <option value="ADMIN">Admin</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-primary" id="registerBtn">Create Account →</button>
+        <div class="role-info">
+          <span class="role-pill">ADMIN</span>
+          <span class="role-pill">EMPLOYEE</span>
+          <span style="font-size:12px; color: var(--muted); align-self: center;">Available roles</span>
+        </div>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:5000';
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+      });
+      document.getElementById('loginForm').style.display = tab === 'login' ? 'block' : 'none';
+      document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none';
+      document.querySelector('.form-header h2').textContent = tab === 'login' ? 'Welcome back' : 'Create account';
+      document.querySelector('.form-header p').textContent = tab === 'login'
+        ? 'Sign in to your account to continue'
+        : 'Register a new account to get started';
+      hideAlert();
+    }
+
+    function showAlert(msg, type) {
+      const el = document.getElementById('alert');
+      el.textContent = msg;
+      el.className = `alert ${type} show`;
+    }
+
+    function hideAlert() {
+      document.getElementById('alert').className = 'alert';
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true;
+      btn.textContent = 'Signing in...';
+      hideAlert();
+
+      try {
+        const res = await fetch(`${API}/api/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: document.getElementById('loginEmail').value,
+            password: document.getElementById('loginPassword').value,
+          }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          showAlert(data.message || 'Login failed', 'error');
+        } else {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('user', JSON.stringify(data.user));
+          showAlert('Login successful! Redirecting...', 'success');
+          setTimeout(() => window.location.href = 'dashboard.html', 800);
+        }
+      } catch (err) {
+        showAlert('Cannot connect to server. Is the backend running?', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Sign In →';
+      }
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('registerBtn');
+      btn.disabled = true;
+      btn.textContent = 'Creating account...';
+      hideAlert();
+
+      try {
+        const res = await fetch(`${API}/api/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: document.getElementById('regName').value,
+            email: document.getElementById('regEmail').value,
+            password: document.getElementById('regPassword').value,
+            role: document.getElementById('regRole').value,
+          }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          showAlert(data.message || 'Registration failed', 'error');
+        } else {
+          showAlert('Account created! Please sign in.', 'success');
+          setTimeout(() => switchTab('login'), 1200);
+        }
+      } catch (err) {
+        showAlert('Cannot connect to server. Is the backend running?', 'error');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Create Account →';
+      }
+    }
+
+    // Check if already logged in
+    if (localStorage.getItem('token')) {
+      window.location.href = 'dashboard.html';
+    }
+  </script>
+</body>
+</html>

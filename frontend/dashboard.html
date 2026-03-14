@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SEMS — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--bg:#F5F2EC;--surface:#FDFBF7;--border:rgba(0,0,0,0.07);--border-strong:rgba(0,0,0,0.13);--text:#1A1814;--muted:rgba(26,24,20,0.45);--accent:#C8522A;--accent-light:rgba(200,82,42,0.08);--green:#2A7A4B;--green-light:rgba(42,122,75,0.08);--font-serif:'Instrument Serif',serif;--font-sans:'Geist',sans-serif;--font-mono:'Geist Mono',monospace;--sidebar-w:240px}
+    body{font-family:var(--font-sans);background:var(--bg);color:var(--text);min-height:100vh;display:flex}
+    .sidebar{width:var(--sidebar-w);background:var(--text);color:var(--bg);display:flex;flex-direction:column;padding:1.5rem 1rem;position:fixed;top:0;left:0;bottom:0;z-index:100}
+    .sidebar-logo{font-family:var(--font-mono);font-size:13px;letter-spacing:.1em;color:rgba(245,242,236,0.4);padding:.5rem .75rem;margin-bottom:1.5rem}
+    .sidebar-logo span{color:var(--accent)}
+    .sidebar-user{display:flex;align-items:center;gap:10px;padding:.75rem;border-radius:10px;background:rgba(255,255,255,0.06);margin-bottom:1.5rem}
+    .avatar{width:36px;height:36px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:white;flex-shrink:0}
+    .user-name{font-size:13px;font-weight:500;color:var(--bg);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .user-role{font-size:11px;color:rgba(245,242,236,0.4);font-family:var(--font-mono)}
+    .nav{flex:1}
+    .nav-label{font-size:10px;font-family:var(--font-mono);letter-spacing:.1em;color:rgba(245,242,236,0.25);padding:0 .75rem;margin-bottom:6px;margin-top:1rem}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:8px;font-size:14px;color:rgba(245,242,236,0.55);cursor:pointer;transition:all .15s;margin-bottom:2px;text-decoration:none}
+    .nav-item:hover{background:rgba(255,255,255,0.07);color:var(--bg)}
+    .nav-item.active{background:rgba(255,255,255,0.1);color:var(--bg);font-weight:500}
+    .nav-icon{font-size:15px;width:20px;text-align:center}
+    .sidebar-footer{padding-top:1rem;border-top:1px solid rgba(255,255,255,0.08)}
+    .btn-logout{width:100%;padding:9px 12px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:rgba(245,242,236,0.5);font-family:var(--font-sans);font-size:13px;cursor:pointer;text-align:left;transition:all .15s}
+    .btn-logout:hover{background:rgba(200,82,42,0.15);color:var(--accent);border-color:rgba(200,82,42,0.3)}
+    .main{margin-left:var(--sidebar-w);flex:1;padding:2rem 2.5rem;min-height:100vh}
+    .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:2rem}
+    .page-title{font-family:var(--font-serif);font-size:36px;font-weight:400;letter-spacing:-.5px;line-height:1.1}
+    .page-title em{font-style:italic;color:var(--accent)}
+    .page-sub{font-size:14px;color:var(--muted);margin-top:4px}
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-bottom:2rem}
+    .stat-card{background:var(--surface);border:1px solid var(--border-strong);border-radius:14px;padding:1.25rem;animation:fadeUp .4s ease both}
+    .stat-card:nth-child(2){animation-delay:.05s}
+    .stat-card:nth-child(3){animation-delay:.1s}
+    .stat-card:nth-child(4){animation-delay:.15s}
+    .stat-label-sm{font-size:11px;font-family:var(--font-mono);color:var(--muted);letter-spacing:.06em;margin-bottom:8px}
+    .stat-val{font-family:var(--font-serif);font-size:36px;line-height:1;color:var(--text)}
+    .stat-change{font-size:12px;color:var(--green);margin-top:6px}
+    .section{background:var(--surface);border:1px solid var(--border-strong);border-radius:16px;overflow:hidden;animation:fadeUp .5s ease .2s both}
+    .section-header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border)}
+    .section-title{font-size:15px;font-weight:500}
+    .section-actions{display:flex;gap:8px;align-items:center}
+    .search-input{padding:7px 12px;background:var(--bg);border:1px solid var(--border-strong);border-radius:8px;font-family:var(--font-sans);font-size:13px;color:var(--text);outline:none;width:200px;transition:border-color .2s}
+    .search-input:focus{border-color:var(--accent)}
+    .search-input::placeholder{color:var(--muted)}
+    .btn-add{padding:7px 14px;background:var(--text);color:var(--bg);border:none;border-radius:8px;font-family:var(--font-sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+    .btn-add:hover{opacity:.8}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse}
+    thead th{padding:10px 16px;text-align:left;font-size:11px;font-family:var(--font-mono);letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--border);white-space:nowrap}
+    tbody tr{border-bottom:1px solid var(--border);transition:background .15s}
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:rgba(0,0,0,0.02)}
+    td{padding:13px 16px;font-size:14px;vertical-align:middle}
+    .emp-name{display:flex;align-items:center;gap:10px}
+    .emp-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg);border:1px solid var(--border-strong);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--muted);flex-shrink:0}
+    .emp-email{font-size:12px;color:var(--muted);margin-top:1px}
+    .role-badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-family:var(--font-mono);font-weight:500}
+    .role-badge.admin{background:var(--accent-light);color:var(--accent);border:1px solid rgba(200,82,42,0.2)}
+    .role-badge.employee{background:rgba(0,0,0,0.05);color:var(--muted);border:1px solid var(--border-strong)}
+    .actions-cell{display:flex;gap:6px}
+    .btn-sm{padding:5px 10px;border-radius:6px;font-size:12px;font-family:var(--font-sans);cursor:pointer;border:1px solid var(--border-strong);background:transparent;color:var(--muted);transition:all .15s}
+    .btn-sm:hover{background:var(--bg);color:var(--text)}
+    .btn-sm.danger:hover{background:rgba(200,82,42,0.08);color:var(--accent);border-color:rgba(200,82,42,0.3)}
+    .empty-state{padding:4rem;text-align:center;color:var(--muted)}
+    .empty-icon{font-size:32px;margin-bottom:12px;opacity:.4}
+    .modal-overlay{position:fixed;inset:0;background:rgba(26,24,20,0.5);backdrop-filter:blur(4px);z-index:200;display:none;align-items:center;justify-content:center}
+    .modal-overlay.open{display:flex}
+    .modal{background:var(--surface);border:1px solid var(--border-strong);border-radius:18px;padding:2rem;width:100%;max-width:440px;animation:fadeUp .3s ease}
+    .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem}
+    .modal-title{font-family:var(--font-serif);font-size:24px;font-weight:400}
+    .modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);line-height:1;padding:4px}
+    .modal-close:hover{color:var(--text)}
+    .field{margin-bottom:1rem}
+    .field label{display:block;font-size:11px;font-family:var(--font-mono);letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+    .field input,.field select{width:100%;padding:10px 13px;background:var(--bg);border:1px solid var(--border-strong);border-radius:9px;font-family:var(--font-sans);font-size:14px;color:var(--text);outline:none;transition:border-color .2s}
+    .field input:focus,.field select:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+    .modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:1.5rem}
+    .btn-cancel{padding:9px 18px;background:transparent;border:1px solid var(--border-strong);border-radius:8px;font-family:var(--font-sans);font-size:13px;cursor:pointer;color:var(--muted)}
+    .btn-cancel:hover{background:var(--bg)}
+    .btn-save{padding:9px 18px;background:var(--text);color:var(--bg);border:none;border-radius:8px;font-family:var(--font-sans);font-size:13px;font-weight:500;cursor:pointer;transition:opacity .2s}
+    .btn-save:hover{opacity:.8}
+    .modal-alert{padding:9px 12px;border-radius:7px;font-size:13px;margin-bottom:1rem;display:none}
+    .modal-alert.error{background:var(--accent-light);color:var(--accent);display:block}
+    .modal-alert.success{background:var(--green-light);color:var(--green);display:block}
+    .toast{position:fixed;bottom:2rem;right:2rem;background:var(--text);color:var(--bg);padding:12px 18px;border-radius:10px;font-size:13px;font-weight:500;z-index:300;transform:translateY(100px);opacity:0;transition:all .3s ease}
+    .toast.show{transform:translateY(0);opacity:1}
+    .profile-card{background:var(--surface);border:1px solid var(--border-strong);border-radius:16px;padding:2rem;max-width:480px;animation:fadeUp .4s ease}
+    .profile-avatar-lg{width:72px;height:72px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:white;margin-bottom:1.25rem}
+    .profile-name{font-family:var(--font-serif);font-size:28px;margin-bottom:4px}
+    .profile-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px}
+    .profile-row:last-child{border-bottom:none}
+    .profile-key{color:var(--muted);font-family:var(--font-mono);font-size:12px}
+    .view{display:none}
+    .view.active{display:block}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+  </style>
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="sidebar-logo">SEMS / <span>Dashboard</span></div>
+    <div class="sidebar-user">
+      <div class="avatar" id="sidebarAvatar">—</div>
+      <div class="user-info">
+        <div class="user-name" id="sidebarName">Loading...</div>
+        <div class="user-role" id="sidebarRole">—</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-label">MAIN</div>
+      <a class="nav-item active" onclick="showView('employees',this)" href="#">
+        <span class="nav-icon">◈</span> Employees
+      </a>
+      <a class="nav-item" onclick="showView('profile',this)" href="#">
+        <span class="nav-icon">◎</span> My Profile
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <button class="btn-logout" onclick="logout()">↩ Sign Out</button>
+    </div>
+  </aside>
+  <main class="main">
+    <div class="view active" id="view-employees">
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">All <em>Employees</em></h1>
+          <p class="page-sub" id="employeeCount">Loading...</p>
+        </div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-label-sm">TOTAL STAFF</div><div class="stat-val" id="statTotal">—</div><div class="stat-change">Registered users</div></div>
+        <div class="stat-card"><div class="stat-label-sm">ADMINS</div><div class="stat-val" id="statAdmins">—</div><div class="stat-change">Admin accounts</div></div>
+        <div class="stat-card"><div class="stat-label-sm">EMPLOYEES</div><div class="stat-val" id="statEmployees">—</div><div class="stat-change">Staff accounts</div></div>
+        <div class="stat-card"><div class="stat-label-sm">YOUR ROLE</div><div class="stat-val" style="font-size:22px;padding-top:4px" id="statMyRole">—</div><div class="stat-change">Current session</div></div>
+      </div>
+      <div class="section">
+        <div class="section-header">
+          <span class="section-title">Employee Directory</span>
+          <div class="section-actions">
+            <input class="search-input" type="text" placeholder="Search employees..." id="searchInput" oninput="filterEmployees()" />
+            <button class="btn-add" onclick="openModal()">+ Add Employee</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>EMPLOYEE</th><th>ROLE</th><th>ID</th><th>ACTIONS</th></tr></thead>
+            <tbody id="employeeTable">
+              <tr><td colspan="4"><div class="empty-state"><div class="empty-icon">◌</div><p>Loading...</p></div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="view" id="view-profile">
+      <div class="page-header">
+        <div><h1 class="page-title">My <em>Profile</em></h1><p class="page-sub">Your account details</p></div>
+      </div>
+      <div class="profile-card">
+        <div class="profile-avatar-lg" id="profileAvatar">—</div>
+        <div class="profile-name" id="profileName">—</div>
+        <div style="margin-bottom:1.5rem" id="profileRoleBadge"></div>
+        <div class="profile-row"><span class="profile-key">USER ID</span><span id="profileId">—</span></div>
+        <div class="profile-row"><span class="profile-key">ROLE</span><span id="profileRole">—</span></div>
+        <div class="profile-row"><span class="profile-key">SESSION</span><span style="color:var(--green);font-size:13px">● Active</span></div>
+      </div>
+    </div>
+  </main>
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2 class="modal-title">Add Employee</h2>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-alert" id="modalAlert"></div>
+      <form onsubmit="handleAddEmployee(event)">
+        <div class="field"><label>FULL NAME</label><input type="text" id="newName" placeholder="Jane Smith" required /></div>
+        <div class="field"><label>EMAIL ADDRESS</label><input type="email" id="newEmail" placeholder="jane@company.com" required /></div>
+        <div class="field"><label>PASSWORD</label><input type="password" id="newPassword" placeholder="Min. 8 characters" required /></div>
+        <div class="field"><label>ROLE</label><select id="newRole"><option value="EMPLOYEE">Employee</option><option value="ADMIN">Admin</option></select></div>
+        <div class="modal-footer">
+          <button type="button" class="btn-cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="btn-save" id="saveBtn">Add Employee</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+    const API='http://localhost:5000';
+    let allEmployees=[];
+    const token=localStorage.getItem('token');
+    const user=JSON.parse(localStorage.getItem('user')||'null');
+    if(!token||!user)window.location.href='login.html';
+    function initUser(){
+      const ini=user.name?user.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2):'??';
+      document.getElementById('sidebarAvatar').textContent=ini;
+      document.getElementById('sidebarName').textContent=user.name||'User';
+      document.getElementById('sidebarRole').textContent=user.role||'';
+      document.getElementById('statMyRole').textContent=user.role||'—';
+      document.getElementById('profileAvatar').textContent=ini;
+      document.getElementById('profileName').textContent=user.name||'—';
+      document.getElementById('profileId').textContent=user.id||'—';
+      document.getElementById('profileRole').textContent=user.role||'—';
+      const isAdmin=user.role?.toUpperCase()==='ADMIN';
+      document.getElementById('profileRoleBadge').innerHTML=`<span class="role-badge ${isAdmin?'admin':'employee'}">${user.role||'—'}</span>`;
+    }
+    initUser();
+    function showView(name,el){
+      document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+      document.getElementById(`view-${name}`).classList.add('active');
+      el.classList.add('active');
+    }
+    async function loadEmployees(){
+      try{
+        const res=await fetch(`${API}/api/protected/profile`,{headers:{Authorization:`Bearer ${token}`}});
+        if(res.status===401){logout();return}
+      }catch(e){}
+      const demo=[{id:user.id,name:user.name,email:'(your email)',role:user.role}];
+      allEmployees=demo;
+      renderTable(demo);
+      updateStats(demo);
+    }
+    function renderTable(employees){
+      const tbody=document.getElementById('employeeTable');
+      document.getElementById('employeeCount').textContent=`${employees.length} employee${employees.length!==1?'s':''} found`;
+      if(employees.length===0){tbody.innerHTML=`<tr><td colspan="4"><div class="empty-state"><div class="empty-icon">◌</div><p>No employees found</p></div></td></tr>`;return}
+      tbody.innerHTML=employees.map(emp=>{
+        const ini=emp.name?emp.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2):'??';
+        const isAdmin=emp.role?.toUpperCase()==='ADMIN';
+        return`<tr><td><div class="emp-name"><div class="emp-avatar">${ini}</div><div><div>${emp.name||'—'}</div><div class="emp-email">${emp.email||''}</div></div></div></td><td><span class="role-badge ${isAdmin?'admin':'employee'}">${emp.role||'EMPLOYEE'}</span></td><td style="font-family:var(--font-mono);font-size:12px;color:var(--muted)">${String(emp.id||'—').slice(0,8)}...</td><td><div class="actions-cell"><button class="btn-sm">Edit</button><button class="btn-sm danger" onclick="removeEmployee('${emp.id}')">Remove</button></div></td></tr>`;
+      }).join('');
+    }
+    function updateStats(employees){
+      const admins=employees.filter(e=>e.role?.toUpperCase()==='ADMIN').length;
+      document.getElementById('statTotal').textContent=employees.length;
+      document.getElementById('statAdmins').textContent=admins;
+      document.getElementById('statEmployees').textContent=employees.length-admins;
+    }
+    function filterEmployees(){
+      const q=document.getElementById('searchInput').value.toLowerCase();
+      renderTable(allEmployees.filter(e=>(e.name||'').toLowerCase().includes(q)||(e.email||'').toLowerCase().includes(q)||(e.role||'').toLowerCase().includes(q)));
+    }
+    function removeEmployee(id){
+      allEmployees=allEmployees.filter(e=>e.id!==id);
+      renderTable(allEmployees);
+      updateStats(allEmployees);
+      showToast('Employee removed');
+    }
+    function openModal(){document.getElementById('modal').classList.add('open');document.getElementById('modalAlert').className='modal-alert'}
+    function closeModal(){document.getElementById('modal').classList.remove('open')}
+    async function handleAddEmployee(e){
+      e.preventDefault();
+      const btn=document.getElementById('saveBtn');btn.disabled=true;btn.textContent='Adding...';
+      const alertEl=document.getElementById('modalAlert');alertEl.className='modal-alert';
+      const name=document.getElementById('newName').value;
+      const email=document.getElementById('newEmail').value;
+      const password=document.getElementById('newPassword').value;
+      const role=document.getElementById('newRole').value;
+      try{
+        const res=await fetch(`${API}/api/auth/register`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify({name,email,password,role})});
+        const data=await res.json();
+        if(!res.ok){alertEl.textContent=data.message||'Failed to add employee';alertEl.className='modal-alert error'}
+        else{allEmployees.push({id:data.user?.id,name,email,role});renderTable(allEmployees);updateStats(allEmployees);closeModal();showToast(`✓ ${name} added successfully`);e.target.reset()}
+      }catch(err){alertEl.textContent='Cannot connect to server.';alertEl.className='modal-alert error'}
+      finally{btn.disabled=false;btn.textContent='Add Employee'}
+    }
+    function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000)}
+    function logout(){localStorage.removeItem('token');localStorage.removeItem('user');window.location.href='login.html'}
+    loadEmployees();
+  </script>
+</body>
+</html>
